@@ -1,0 +1,76 @@
+.grammar-check-tab {
+
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .grammar-check-tab-content{
+
+        padding: 40px;
+        width: 700px;
+        border-radius: 20px;
+        background: linear-gradient(145deg, #e5e7eb, #cbd5e1);
+        box-shadow:
+            0 20px 50px rgba(0,0,0,0.4),
+            inset 0 1px 1px rgba(255,255,255,0.4);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .grammar-check-tab-span {
+
+        font-size: 34px;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    select {
+
+        padding: 12px;
+        border-radius: 12px;
+        border: none;
+        background: #cbd5e1;
+        font-size: 16px;
+        outline: none;
+    }
+
+    .grammar-check-tab-text-area{
+
+        width: 100%;
+        min-height: 160px;
+    }
+
+    grammar-check-tab-text-area::part(input-field) {
+
+        background: linear-gradient(145deg, #dbeafe, #bfdbfe);
+        border-radius: 14px;
+        padding: 12px;
+        font-size: 15px;
+        border: none;
+        outline: none;
+    }
+
+    .grammar-check-tab-button {
+        align-self: center;
+        padding: 14px 40px;
+        border-radius: 14px;
+        font-size: 18px;
+        cursor: pointer;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border: none;
+        box-shadow:
+            0 10px 25px rgba(37,99,235,0.4);
+        transition: all 0.25s ease;
+    }
+
+   .grammar-check-tab-button:hover {
+
+       transform: translateY(-2px) scale(1.05);
+       box-shadow:
+           0 15px 30px rgba(37,99,235,0.6);
+   }
+}

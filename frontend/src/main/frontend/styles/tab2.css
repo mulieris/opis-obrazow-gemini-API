@@ -1,0 +1,15 @@
+.tab2 {
+
+    width: 1pp%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .content-tab2 {
+
+        background-color: #f1ffe0;
+        margin: 4px;
+        border-radius: 8px;
+    }
+}

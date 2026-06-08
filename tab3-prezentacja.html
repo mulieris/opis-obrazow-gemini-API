@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tab3 — Opis zdjęcia przez Gemini · Prezentacja</title>
+<style>
+  :root{
+    --bg:#08090a; --bg2:#0d0f10; --panel:#121315; --panel2:#171a1c;
+    --line:rgba(255,255,255,.08); --line2:rgba(198,255,61,.25);
+    --lime:#c6ff3d; --lime-dim:#9bc62f; --lime-soft:rgba(198,255,61,.10);
+    --text:#f3f5f0; --muted:#9aa09a; --bad:#ff6b6b; --warn:#ffd24a; --good:#c6ff3d;
+    --code:#0b0d0e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(900px 600px at 85% -5%,rgba(198,255,61,.06),transparent 60%),
+      var(--bg);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* Figma-style dotted grid */
+  .deck{height:100vh;width:100vw;position:relative;
+    background-image:radial-gradient(rgba(255,255,255,.045) 1px,transparent 1px);
+    background-size:26px 26px;background-position:-13px -13px;}
+  .slide{
+    position:absolute;inset:0;display:none;flex-direction:column;
+    padding:8vh 8vw 12vh;opacity:0;transform:translateY(8px);
+    transition:opacity .3s ease,transform .3s ease;overflow-y:auto;
+  }
+  .slide.active{display:flex;opacity:1;transform:none}
+  /* Figma-ish frame label */
+  .frame{position:absolute;top:3.2vh;left:8vw;display:flex;align-items:center;gap:8px;
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--lime-dim)}
+  .frame .dot{width:9px;height:9px;border-radius:2px;background:var(--lime);box-shadow:0 0 12px var(--lime)}
+  .frame .muted{color:#5d635c}
+
+  h1{font-size:clamp(30px,5.4vw,60px);line-height:1.04;margin-bottom:.35em;letter-spacing:-.02em;font-weight:800}
+  h1 .lime{color:var(--lime)}
+  h2{font-size:clamp(23px,3.4vw,40px);margin-bottom:.55em;font-weight:800;letter-spacing:-.01em}
+  h2 .tag{font-size:.42em;vertical-align:middle;color:var(--muted);font-weight:600;
+    font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--panel);
+    border:1px solid var(--line);padding:.28em .7em;border-radius:7px;margin-left:.5em}
+  .sub{font-size:clamp(15px,1.6vw,21px);color:var(--muted);max-width:62ch;line-height:1.55}
+  p{font-size:clamp(15px,1.5vw,20px);line-height:1.55;max-width:74ch;margin:.4em 0}
+  ul{margin:.6em 0 .6em 1.1em;max-width:80ch;list-style:none}
+  li{font-size:clamp(14px,1.45vw,19px);line-height:1.5;margin:.45em 0;padding-left:1.3em;position:relative}
+  li::before{content:"▸";position:absolute;left:0;color:var(--lime)}
+  li b{color:#fff}
+  .muted{color:var(--muted)}
+
+  .chip{display:inline-block;padding:.32em .8em;border-radius:8px;font-size:.82rem;font-weight:600;
+    background:var(--lime-soft);color:var(--lime);border:1px solid var(--line2);margin:.25em .35em .25em 0;
+    font-family:ui-monospace,Menlo,Consolas,monospace}
+  .chip.n{background:var(--panel);color:var(--muted);border-color:var(--line)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;
+    transition:border-color .2s,transform .2s}
+  .card:hover{border-color:var(--line2);transform:translateY(-2px)}
+  .card h3{font-size:1rem;color:var(--lime);margin-bottom:.35em;font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:600}
+  .card p{font-size:.92rem;color:var(--muted);margin:0}
+  .card .big{font-size:1.5rem;font-weight:800;color:var(--lime)}
+
+  pre{background:var(--code);border:1px solid var(--line);border-left:3px solid var(--lime);
+    border-radius:12px;padding:14px 16px;overflow:auto;font-family:ui-monospace,Menlo,Consolas,monospace;
+    font-size:clamp(11px,1.15vw,14px);line-height:1.55;margin:.7em 0;max-width:100%}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace}
+  .k{color:#c6ff3d}.s{color:#9be36b}.c{color:#5d635c;font-style:italic}.n{color:#e6f7b0}.t{color:#ffd24a}
+
+  .flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;margin-top:18px}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:148px;flex:1}
+  .step .num{font-size:.72rem;color:var(--lime);font-family:ui-monospace,Menlo,Consolas,monospace}
+  .step .ttl{font-weight:700;margin:.2em 0;font-size:.96rem}
+  .step .d{font-size:.8rem;color:var(--muted)}
+  .arrow{display:flex;align-items:center;color:var(--lime);font-size:1.4rem}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media(max-width:820px){.two{grid-template-columns:1fr}}
+
+  .fix{display:flex;gap:13px;align-items:flex-start;background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin:.5em 0}
+  .fix .ic{font-size:1.25rem;line-height:1.2;width:1.5em;text-align:center}
+  .fix .body{flex:1}
+  .fix .body .h{font-weight:700;color:#fff}
+  .fix .body .h code{color:var(--warn)}
+  .fix .body .m{font-size:.9rem;color:var(--muted);margin-top:.18em;line-height:1.5}
+  .bad{color:var(--bad)} .good{color:var(--good)} .warn{color:var(--warn)}
+  .center{justify-content:center}
+
+  /* criteria slide */
+  .crit{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+  .crit-row{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+  .crit-row .grade{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-width:86px;background:var(--lime-soft);border:1px solid var(--line2);border-radius:10px;padding:8px 10px}
+  .crit-row .grade .g{font-size:1.7rem;font-weight:800;color:var(--lime);line-height:1}
+  .crit-row .grade .l{font-size:.62rem;color:var(--lime-dim);text-transform:uppercase;letter-spacing:.08em;margin-top:3px}
+  .crit-row ul{margin:0;max-width:none}
+  .crit-row li{margin:.25em 0;font-size:clamp(13px,1.3vw,17px)}
+  .crit-row li::before{content:"✓";color:var(--lime);font-weight:800}
+  .crit-row li .req{color:var(--muted)}
+
+  .footer{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-between;
+    align-items:center;padding:11px 18px;font-size:.8rem;color:var(--muted);
+    background:linear-gradient(0deg,rgba(8,9,10,.92),transparent);font-family:ui-monospace,Menlo,Consolas,monospace}
+  .progress{position:fixed;top:0;left:0;height:3px;background:var(--lime);box-shadow:0 0 10px var(--lime);
+    transition:width .3s ease;z-index:10}
+  .nav button{background:var(--panel);color:var(--text);border:1px solid var(--line);
+    border-radius:8px;padding:6px 12px;cursor:pointer;font-size:.82rem;margin-left:6px;font-family:inherit}
+  .nav button:hover{border-color:var(--lime);color:var(--lime)}
+  kbd{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:.8rem;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .badge{font-size:.68rem;padding:.18em .6em;border-radius:6px;font-weight:700;margin-left:.4em;vertical-align:middle;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .badge.add{background:var(--lime-soft);color:var(--lime);border:1px solid var(--line2)}
+  .badge.fix{background:rgba(255,210,74,.14);color:var(--warn);border:1px solid rgba(255,210,74,.32)}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+  <!-- 1 -->
+  <section class="slide active center">
+    <div class="frame"><span class="dot"></span> Tab3.frame <span class="muted">· 1440 × 900</span></div>
+    <span class="chip n">Projekt zaliczeniowy</span>
+    <span class="chip n">Laboratorium programowania</span>
+    <span class="chip n">r.a. 2025/2026</span>
+    <h1 style="margin-top:18px">Tab3 — <span class="lime">„Opisz zdjęcie"</span><br>z wykorzystaniem Gemini</h1>
+    <p class="sub">Jak działa zakładka, z jakich plików się składa, jaka jest idea — oraz co trzeba było naprawić, żeby całość rzeczywiście ruszyła.</p>
+    <div style="margin-top:18px">
+      <span class="chip">Vaadin · frontend</span>
+      <span class="chip">Spring Boot · backend</span>
+      <span class="chip">Google Gemini API</span>
+      <span class="chip">REST + WebClient</span>
+    </div>
+    <p style="margin-top:26px;font-weight:700"><span class="lime">Opracowała:</span> Ewelina Kasprowicz</p>
+    <p class="muted" style="margin-top:10px;font-family:ui-monospace,monospace;font-size:.85rem">Sterowanie: <kbd>→</kbd> / <kbd>←</kbd> lub <kbd>Spacja</kbd></p>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <div class="frame"><span class="dot"></span> idea</div>
+    <h2>Idea <span class="tag">po co to jest</span></h2>
+    <p>Zakładka <b>Tab3</b> pozwala użytkownikowi <b>przesłać zdjęcie</b> oraz wpisać <b>instrukcję tekstową</b> (np. <i>„Jaki to owoc i jakiego koloru?"</i>). Aplikacja wysyła obraz + instrukcję do modelu <b>Gemini</b>, a ten zwraca <b>opis treści obrazu</b> zgodny z instrukcją.</p>
+    <div class="grid">
+      <div class="card"><h3>Wejście</h3><p>Obraz (PNG/JPEG) + instrukcja tekstowa od użytkownika.</p></div>
+      <div class="card"><h3>Przetwarzanie</h3><p>Gemini analizuje obraz w kontekście instrukcji i tworzy opis.</p></div>
+      <div class="card"><h3>Wyjście</h3><p>JSON <code>{ found, answer }</code> → opis pokazany w powiadomieniu.</p></div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide">
+    <div class="frame"><span class="dot"></span> data-flow</div>
+    <h2>Przepływ danych <span class="tag">end-to-end</span></h2>
+    <div class="flow">
+      <div class="step"><div class="num">1 · frontend</div><div class="ttl">Tab3.java</div><div class="d">Upload zdjęcia + pole tekstowe + przycisk „Opisz".</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="num">2 · klient http</div><div class="ttl">WebService</div><div class="d"><code>POST /api/v1/gemini/photo</code> przez WebClient.</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="num">3 · backend</div><div class="ttl">GeminiController</div><div class="d">Odbiera <code>PhotoChangeRequest</code>.</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="num">4 · logika</div><div class="ttl">GeminiService</div><div class="d">Buduje prompt, woła Gemini API.</div></div>
+    </div>
+    <div class="flow">
+      <div class="step"><div class="num">5 · gemini</div><div class="ttl">Google API</div><div class="d">Analiza obrazu + instrukcji, odpowiedź JSON.</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="num">6 · parser</div><div class="ttl">GeminiParser</div><div class="d">Wyciąga tekst i mapuje na <code>PhotoChangeResponse</code>.</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="num">7 · powrót</div><div class="ttl">→ Tab3</div><div class="d">Mapowane na <code>PhotoToChange</code> → powiadomienie z opisem.</div></div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide">
+    <div class="frame"><span class="dot"></span> components</div>
+    <h2>Co dodaliśmy <span class="tag">nowe pliki</span></h2>
+    <div class="two">
+      <div>
+        <p class="muted" style="margin-bottom:6px;font-family:ui-monospace,monospace;font-size:.8rem">FRONTEND</p>
+        <div class="card" style="margin-bottom:10px"><h3>Tab3.java <span class="badge add">NEW</span></h3><p>Widok: Upload, podgląd obrazu, pole instrukcji, przycisk „Opisz".</p></div>
+        <div class="card" style="margin-bottom:10px"><h3>tab3.css <span class="badge add">NEW</span></h3><p>Stylizacja zakładki (układ, kolory, zaokrąglenia).</p></div>
+        <div class="card" style="margin-bottom:10px"><h3>WebService.isValidChange() <span class="badge add">NEW</span></h3><p>Metoda wysyłająca obraz+tekst na <code>/photo</code>.</p></div>
+        <div class="card"><h3>PhotoToChange.java <span class="badge add">NEW</span></h3><p>Model odpowiedzi po stronie frontendu: <code>found</code>, <code>answer</code>.</p></div>
+      </div>
+      <div>
+        <p class="muted" style="margin-bottom:6px;font-family:ui-monospace,monospace;font-size:.8rem">BACKEND</p>
+        <div class="card" style="margin-bottom:10px"><h3>GeminiController · /photo <span class="badge add">NEW</span></h3><p>Endpoint REST przyjmujący <code>PhotoChangeRequest</code>.</p></div>
+        <div class="card" style="margin-bottom:10px"><h3>GeminiService.photoChange() <span class="badge add">NEW</span></h3><p>Prompt do Gemini + wysyłka obrazu w base64.</p></div>
+        <div class="card" style="margin-bottom:10px"><h3>PhotoChangeRequest / Response <span class="badge add">NEW</span></h3><p>DTO żądania i odpowiedzi backendu.</p></div>
+        <div class="card"><h3>GeminiParser.parsePhotoResponse() <span class="badge add">NEW</span></h3><p>Parsowanie odpowiedzi Gemini do obiektu.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide">
+    <div class="frame"><span class="dot"></span> frontend</div>
+    <h2>Frontend — Tab3.java <span class="tag">co kształtuje widok</span></h2>
+    <p>Layout poziomy: po lewej karta z formularzem, po prawej podgląd zdjęcia. Przycisk jest aktywny dopiero gdy jest <b>plik i tekst</b>.</p>
+<pre><span class="c">// kliknięcie „Opisz" — wyślij obraz + instrukcję, pokaż wynik</span>
+buttonPhotoChange.addClickListener(event -&gt; {
+    String text  = textFieldChange.getValue();
+    <span class="k">byte</span>[] image = memoryBufferChange.getInputStream().readAllBytes();
+    WebService ws = ApplicationContext.getBean(WebService.<span class="k">class</span>);
+    PhotoToChange result = ws.isValidChange(text, image);
+
+    String message = result.isFound()
+            ? result.getAnswer()
+            : <span class="s">"To nie jest coś co mogę opisać."</span>;
+    <span class="k">new</span> Notification(message, <span class="n">15000</span>).open();
+});</pre>
+    <p class="muted">Podgląd: po udanym uploadzie bajty pliku trafiają do <code>StreamResource</code>, ustawianego jako <code>src</code> komponentu <code>Image</code> (550×550).</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide">
+    <div class="frame"><span class="dot"></span> backend</div>
+    <h2>Backend — prompt do Gemini <span class="tag">photoChange()</span></h2>
+    <p>Obraz kodowany jest do <b>base64</b> i wysyłany razem z instrukcją jako <code>inline_data</code>. Prompt wymusza odpowiedź w formacie JSON.</p>
+<pre>String base64Image = Base64.getEncoder().encodeToString(image);
+jsonPayload = <span class="s">"""
+  { "contents":[{ "parts":[
+    { "text":"Opisz zawartość obrazu zgodnie z tą instrukcją: %s.\n
+               Zwróć odpowiedź wyłącznie w formacie JSON:
+               { \"found\":true/false, \"answer\":\"opis\" } ..." },
+    { "inline_data":{ "mime_type":"image/jpeg", "data":"%s" } }
+  ]}] }"""</span>.formatted(text, base64Image);
+
+<span class="c">// odpowiedź → GeminiParser.parsePhotoResponse() → PhotoChangeResponse</span></pre>
+    <p class="muted">Komunikacja z Gemini przez <code>java.net.http.HttpClient</code>; model <code>gemini-2.5-flash</code> (multimodalny).</p>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide">
+    <div class="frame"><span class="dot"></span> bug-report</div>
+    <h2>Stan zastany <span class="tag">dlaczego nie działało</span></h2>
+    <p>Po złożeniu kodu zakładka „nic nie robiła". Diagnoza wykazała kilka błędów, które blokowały <b>kompilację</b> i <b>działanie</b> backendu:</p>
+    <ul>
+      <li><span class="bad">Backend się nie kompilował</span> — pomieszane klasy i metody.</li>
+      <li><span class="bad">Brak endpointów</span> <code>/photo</code> i <code>/plate</code> — żądania frontu trafiały w 404.</li>
+      <li><span class="bad">Niepoprawny JSON</span> w promptcie (surowe znaki nowej linii).</li>
+      <li><span class="bad">Złe nazwy akcesorów</span> — dane nie wiązały się z JSON-em.</li>
+      <li><span class="bad">Brak getterów</span> w <code>ImageResponse</code> → błąd 406.</li>
+      <li><span class="warn">Puste <code>catch {}</code></span> — błędy ukryte, brak jakiejkolwiek informacji.</li>
+      <li><span class="warn">Backend nie był uruchomiony</span> — front pukał na pusty port 8081.</li>
+    </ul>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide">
+    <div class="frame"><span class="dot"></span> fixes · 1/2</div>
+    <h2>Co poprawiliśmy <span class="tag">żeby zadziałało · 1</span></h2>
+
+    <div class="fix"><div class="ic">🧩</div><div class="body">
+      <div class="h"><code>PhotoChangeResponse.java</code> <span class="badge fix">FIX</span></div>
+      <div class="m">Plik zawierał omyłkowo klasę <code>GeminiParser</code> (copy-paste). Przywróciliśmy właściwą klasę <code>PhotoChangeResponse</code> z polami <code>found</code> / <code>answer</code> — bez niej kod się nie kompilował.</div>
+    </div></div>
+
+    <div class="fix"><div class="ic">🧹</div><div class="body">
+      <div class="h"><code>GeminiParser.java</code> <span class="badge fix">FIX</span></div>
+      <div class="m">Zdublowane metody, literówka <code>paresImageResponse</code>, <code>getText()</code> bez <code>return</code>, brak <code>parsePhotoResponse</code>. Przepisaliśmy na czystą wersję z 4 metodami.</div>
+    </div></div>
+
+    <div class="fix"><div class="ic">🔌</div><div class="body">
+      <div class="h"><code>GeminiController</code> — dodane <code>/photo</code> i <code>/plate</code> <span class="badge fix">FIX</span></div>
+      <div class="m">Frontend wołał te ścieżki, ale ich nie było. Dodaliśmy mapowania <code>@PostMapping</code> wywołujące odpowiednio <code>photoChange()</code> i <code>isCorrect()</code>.</div>
+    </div></div>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide">
+    <div class="frame"><span class="dot"></span> fixes · 2/2</div>
+    <h2>Co poprawiliśmy <span class="tag">żeby zadziałało · 2</span></h2>
+
+    <div class="fix"><div class="ic">📝</div><div class="body">
+      <div class="h"><code>GeminiService.photoChange()</code> — naprawiony JSON <span class="badge fix">FIX</span></div>
+      <div class="m">Tekst promptu był rozbity na 3 fizyczne linie → niepoprawny JSON wysyłany do Gemini. Zwinęliśmy do jednej linii z <code>\n</code> i poprawnymi cudzysłowami.</div>
+    </div></div>
+
+    <div class="fix"><div class="ic">🔗</div><div class="body">
+      <div class="h"><code>PhotoChangeRequest</code> — nazwa settera <span class="badge fix">FIX</span></div>
+      <div class="m"><code>setSentenceToChange</code> nie pasował do klucza JSON <code>sentenseToChange</code> → instrukcja docierała jako <code>null</code>. Zmieniliśmy na <code>setSentenseToChange</code>.</div>
+    </div></div>
+
+    <div class="fix"><div class="ic">📦</div><div class="body">
+      <div class="h"><code>ImageResponse</code> (backend) — dodane gettery <span class="badge fix">FIX</span></div>
+      <div class="m">Klasa nie miała getterów → Jackson nie mógł zserializować odpowiedzi → <span class="bad">406</span>. Dodaliśmy <code>isFound()</code> i <code>getDetected_plate()</code> (naprawia Tab2).</div>
+    </div></div>
+
+    <div class="fix"><div class="ic">🔔</div><div class="body">
+      <div class="h"><code>Tab3.java</code> — widoczne błędy <span class="badge fix">FIX</span></div>
+      <div class="m">Puste <code>catch {}</code> zamieniliśmy na <code>Notification.show(...)</code> — błąd jest teraz widoczny, a nie ukryty.</div>
+    </div></div>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide">
+    <div class="frame"><span class="dot"></span> root-cause</div>
+    <h2>Diagnoza „kliknięcie nic nie robi" <span class="tag">dlaczego naprawdę</span></h2>
+    <p>Po naprawie kompilacji zakładka nadal nie reagowała. Sprawdzenie portów ujawniło prawdziwą przyczynę:</p>
+<pre>frontend :8080  -&gt; <span class="s">200</span>   <span class="c">// działał</span>
+backend  :8081  -&gt; <span class="t">000</span>   <span class="c">// connection refused — NIE był uruchomiony!</span></pre>
+    <p>Frontend tylko <b>przekazuje</b> żądanie do backendu (port 8081), a ten dopiero rozmawia z Gemini. Bez uruchomionego backendu przycisk „Opisz" zawsze kończył się błędem.</p>
+    <p class="good">→ Po uruchomieniu backendu wszystkie 3 endpointy zwracają <b>200</b>, a zakładki działają end-to-end.</p>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide">
+    <div class="frame"><span class="dot"></span> verify</div>
+    <h2>Weryfikacja <span class="tag">że działa</span></h2>
+    <div class="grid">
+      <div class="card"><h3>POST /photo</h3><p class="big">200 ✓</p><p>Tab3 — opis zdjęcia</p></div>
+      <div class="card"><h3>POST /plate</h3><p class="big">200 ✓</p><p>Tab2 — tablice rejestracyjne</p></div>
+      <div class="card"><h3>GET /{lang}/{sentence}</h3><p class="big">200 ✓</p><p>GrammarCheckTab — gramatyka</p></div>
+    </div>
+    <p style="margin-top:18px">Obie części budują się przez Maven bez błędów:</p>
+<pre>sh mvnw -pl backend  -am compile   <span class="c"># BUILD SUCCESS</span>
+sh mvnw -pl frontend     compile   <span class="c"># BUILD SUCCESS</span>
+sh mvnw -pl backend spring-boot:run  <span class="c"># start na :8081</span></pre>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide">
+    <div class="frame"><span class="dot"></span> kryteria</div>
+    <h2>Spełnione kryteria <span class="tag">wymagania zaliczenia</span></h2>
+    <div class="crit">
+      <div class="crit-row">
+        <div class="grade"><div class="g">3</div><div class="l">ocena</div></div>
+        <ul>
+          <li>Część frontendowa aplikacji <span class="req">→ aplikacja Vaadin z zakładkami (gramatyka, tablice, opis zdjęcia)</span></li>
+          <li>Poprawna struktura projektu i czytelny interfejs <span class="req">→ moduły frontend/backend, pakiety, style CSS</span></li>
+        </ul>
+      </div>
+      <div class="crit-row">
+        <div class="grade"><div class="g">4</div><div class="l">ocena</div></div>
+        <ul>
+          <li>Część backendowa z co najmniej jednym endpointem API <span class="req">→ GeminiController: GET oraz POST <code>/photo</code>, <code>/plate</code></span></li>
+          <li>Komunikacja frontend ↔ backend (pobieranie / wysyłanie danych) <span class="req">→ WebService (WebClient) wysyła obraz+tekst, odbiera JSON</span></li>
+        </ul>
+      </div>
+      <div class="crit-row">
+        <div class="grade"><div class="g">5</div><div class="l">ocena</div></div>
+        <ul>
+          <li>Implementacja rozwiązania wykorzystującego Gemini <span class="req">→ GeminiService woła Gemini API w 3 funkcjach (tekst, obraz, opis)</span></li>
+          <li>Projekt czytelny, uporządkowany i możliwy do uruchomienia <span class="req">→ kompiluje się i działa end-to-end</span></li>
+          <li>Dodatkowe funkcjonalności ponad minimum <span class="req">→ upload plików, podgląd obrazu, wybór języka</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section class="slide center">
+    <div class="frame"><span class="dot"></span> summary</div>
+    <h2>Podsumowanie</h2>
+    <ul>
+      <li><b>Idea:</b> opis zdjęcia wg instrukcji użytkownika z użyciem modelu Gemini.</li>
+      <li><b>Dodano:</b> pełną ścieżkę Tab3 (UI + CSS + klient HTTP + endpoint + logika + parser + DTO).</li>
+      <li><b>Naprawiono:</b> kompilację backendu, brakujące endpointy, niepoprawny JSON, wiązanie danych, serializację (406) i widoczność błędów.</li>
+      <li><b>Bonus:</b> przy okazji naprawiona także zakładka Tab2 (tablice).</li>
+      <li><b>Status:</b> <span class="good">wszystkie 3 funkcje działają end-to-end</span> — kryteria zaliczenia spełnione.</li>
+    </ul>
+    <p class="muted" style="margin-top:22px">Do rozważenia na przyszłość: klucz API w zmiennej środowiskowej zamiast w kodzie.</p>
+    <div style="margin-top:18px"><span class="chip">Dziękujemy</span></div>
+  </section>
+
+</div>
+
+<div class="footer">
+  <div>Tab3 · opis zdjęcia przez Gemini · Opracowała: Ewelina Kasprowicz</div>
+  <div class="nav">
+    <span id="counter">1 / 13</span>
+    <button onclick="go(-1)">‹ Wstecz</button>
+    <button onclick="go(1)">Dalej ›</button>
+  </div>
+</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  let i=0;
+  function render(){
+    slides.forEach((s,n)=>s.classList.toggle('active',n===i));
+    document.getElementById('counter').textContent=(i+1)+' / '+slides.length;
+    document.getElementById('progress').style.width=((i+1)/slides.length*100)+'%';
+    slides[i].scrollTop=0;
+  }
+  function go(d){i=Math.min(slides.length-1,Math.max(0,i+d));render();}
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(1);}
+    else if(e.key==='ArrowLeft'){go(-1);}
+    else if(e.key==='Home'){i=0;render();}
+    else if(e.key==='End'){i=slides.length-1;render();}
+  });
+  render();
+</script>
+</body>
+</html>

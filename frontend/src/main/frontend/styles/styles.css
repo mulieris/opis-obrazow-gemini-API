@@ -1,0 +1,41 @@
+@import "./grammar-check-tab.css";
+@import "./tab2.css";
+@import "./tab3.css";
+
+.main-view {
+
+    background: radial-gradient(circle at top, #1f2a48, #0f172a);
+    height: 100vh;
+}
+
+.main-view::part(drawer){
+
+    color: #cbd5f5;
+    width: 180px;
+    background: linear-gradient(180deg, #2a3b6a, #1e2a4a);
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.header {
+
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px 16px;
+}
+
+.header-burger {
+
+    width: 36px;
+    height: 36px;
+    opacity: 0.8;
+    cursor: pointer;
+}
+
+.header-clock {
+
+    margin-left: auto;
+    font-size: 14px;
+    color: #facc15;
+    font-weight: 500;
+}
